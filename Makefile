@@ -32,16 +32,19 @@ install: etckeeper.version
 ifeq ($(HIGHLEVEL_PACKAGE_MANAGER),apt)
 	mkdir -p $(DESTDIR)$(etcdir)/apt/apt.conf.d
 	$(INSTALL_DATA) apt.conf $(DESTDIR)$(etcdir)/apt/apt.conf.d/05etckeeper
+	[ "$(prefix)" != "/usr" ] && sed -i "s:/usr/bin/etckeeper:$(bindir)/etckeeper:g" $(DESTDIR)$(etcdir)/apt/apt.conf.d/05etckeeper
 	mkdir -p $(DESTDIR)$(etcdir)/cruft/filters-unex
 	$(INSTALL_DATA) cruft_filter $(DESTDIR)$(etcdir)/cruft/filters-unex/etckeeper
 endif
 ifeq ($(LOWLEVEL_PACKAGE_MANAGER),pacman-g2)
 	mkdir -p $(DESTDIR)$(etcdir)/pacman-g2/hooks
 	$(INSTALL_DATA) pacman-g2.hook $(DESTDIR)$(etcdir)/pacman-g2/hooks/etckeeper
+	[ "$(prefix)" != "/usr" ] && sed -i "s:/usr/bin/etckeeper:$(bindir)/etckeeper:g" $(DESTDIR)$(etcdir)/pacman-g2/hooks/etckeeper
 endif
 ifeq ($(HIGHLEVEL_PACKAGE_MANAGER),yum)
 	mkdir -p $(DESTDIR)$(prefix)/lib/yum-plugins
 	$(INSTALL_DATA) yum-etckeeper.py $(DESTDIR)$(prefix)/lib/yum-plugins/etckeeper.py
+	[ "$(prefix)" != "/usr" ] && { sed -i "s:/usr/bin/etckeeper:$(bindir)/etckeeper:g" $(DESTDIR)$(prefix)/lib/yum-plugins/etckeeper.py; ln -s $(prefix)/lib/yum-plugins/etckeeper.py $(DESTDIR)/usr/lib/yum-plugins/etckeeper.py; }
 	mkdir -p $(DESTDIR)$(etcdir)/yum/pluginconf.d
 	$(INSTALL_DATA) yum-etckeeper.conf $(DESTDIR)$(etcdir)/yum/pluginconf.d/etckeeper.conf
 endif
@@ -52,6 +55,8 @@ ifeq ($(HIGHLEVEL_PACKAGE_MANAGER),zypper)
 	mkdir -p $(DESTDIR)$(prefix)/lib/zypp/plugins/commit
 	$(INSTALL) zypper-etckeeper.py $(DESTDIR)$(prefix)/lib/zypp/plugins/commit/zypper-etckeeper.py
 endif
+	$(INSTALL_EXE) -m 0755 debian/cron.daily $(DESTDIR)$(etcdir)/cron.daily/etckeeper
+	[ "$(prefix)" != "/usr" ] && sed -i "s:/usr/bin/etckeeper:$(bindir)/etckeeper:g" $(DESTDIR)$(etcdir)/cron.daily/etckeeper
 	-$(PYTHON) ./etckeeper-bzr/__init__.py install --root=$(DESTDIR) ${PYTHON_INSTALL_OPTS} || echo "** bzr support not installed"
 	echo "** installation successful"
 
